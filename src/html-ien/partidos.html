@@ -1,0 +1,272 @@
+<div class="app-container">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">Mundial 2026</div>
+    <nav class="sidebar-menu">
+      <a href="#" class="sidebar-link active">🏆 Simulador Completo</a>
+      <a href="#" class="sidebar-link">📊 Mi Clasificación</a>
+      <a href="#" class="sidebar-link">📅 Calendario</a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="fixture-wrapper">
+
+      <div style="display: flex; gap: 4px; margin-bottom: 1rem; border-bottom: 1px solid #d3d1c7; padding-bottom: 6px; flex-wrap: wrap;">
+        <button onclick="cambiarVista('grupo')" id="tab-grupo" style="font-size: 13px; font-weight: 500; padding: 6px 12px; border: none; background: #e8e6df; border-radius: 6px; cursor: pointer;">Fase de Grupos (72 Partidos) 📅</button>
+        <button onclick="cambiarVista('eliminatoria')" id="tab-eliminatoria" style="font-size: 13px; font-weight: 500; padding: 6px 12px; border: none; background: transparent; border-radius: 6px; cursor: pointer;">Fases Finales 🏅</button>
+      </div>
+
+      <div id="fixture-contenedor"></div>
+
+      <div style="text-align: center; margin-top: 1.25rem;">
+        <button onclick="guardarPredicciones()" style="background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 13px; width: 100%;">
+          Guardar Todo el Mundial
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #faf9f6; color: #333; }
+  .app-container { display: flex; min-height: 100vh; }
+  .sidebar { width: 240px; background: #ffffff; border-right: 0.5px solid #d3d1c7; padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 1.5rem; flex-shrink: 0; }
+  .sidebar-brand { font-size: 16px; font-weight: 700; padding-left: 8px; }
+  .sidebar-menu { display: flex; flex-direction: column; gap: 4px; }
+  .sidebar-link { font-size: 14px; color: #5f5e5a; text-decoration: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; }
+  .sidebar-link.active { background: #e8e6df; color: #333; }
+  .main-content { flex-grow: 1; padding: 2rem 1rem; display: flex; justify-content: center; align-items: flex-start; }
+  .fixture-wrapper { width: 100%; max-width: 600px; }
+
+  .tabla-posiciones { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 12px; background: #fff; border: 0.5px solid #d3d1c7; border-radius: 6px; overflow: hidden; }
+  .tabla-posiciones th, .tabla-posiciones td { padding: 6px 8px; text-align: center; border-bottom: 0.5px solid #eee; }
+  .tabla-posiciones th { background: #f1efe8; color: #5f5e5a; }
+  .tabla-posiciones td:nth-child(2) { text-align: left; font-weight: 500; }
+  .tabla-posiciones tr:nth-child(-n+2) td:nth-child(2) { border-left: 3px solid #14833b; }
+
+  @media (max-width: 768px) {
+    .app-container { flex-direction: column; }
+    .sidebar { width: 100%; border-right: none; border-bottom: 0.5px solid #d3d1c7; padding: 1rem; }
+    .sidebar-menu { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+    .main-content { padding: 1rem; }
+  }
+</style>
+
+<script>
+// Distribución Real/Simulada de las 48 Selecciones del Mundial en 12 Grupos
+const gruposConfig = {
+  "Grupo A": ["México", "Sudáfrica", "República de Corea", "República Checa"],
+  "Grupo B": ["Canadá", "Bosnia y Herzegovina", "Catar", "Suiza"],
+  "Grupo C": ["Brasil", "Marruecos", "Haití", "Escocia"],
+  "Grupo D": ["Estados Unidos", "Paraguay", "Australia", "Turquía"],
+  "Grupo E": ["Alemania", "Curazao", "Costa de Marfil", "Ecuador"],
+  "Grupo F": ["Países Bajos", "Japón", "Suecia", "Túnez"],
+  "Grupo G": ["Bélgica", "Egipto", "Irán", "Nueva Zelanda"],
+  "Grupo H": ["España", "Cabo Verde", "Arabia Saudita", "Uruguay"],
+  "Grupo I": ["Francia", "Senegal", "Irak", "Noruega"],
+  "Grupo J": ["Argentina", "Argelia", "Austria", "Jordania"],
+  "Grupo K": ["Portugal", "República Democrática del Congo", "Uzbekistán", "Colombia"],
+  "Grupo L": ["Inglaterra", "Croacia", "Ghana", "Panamá"]
+};
+
+// ALGORITMO: Genera automáticamente las 6 combinaciones por grupo (72 partidos en total)
+const partidos = [];
+let partidoId = 1;
+
+Object.keys(gruposConfig).forEach(grupo => {
+  const eq = gruposConfig[grupo];
+  
+  // Jornada 1
+  partidos.push({ id: partidoId++, fecha: "Jornada 1", grupo: grupo, local: eq[0], visitante: eq[1] });
+  partidos.push({ id: partidoId++, fecha: "Jornada 1", grupo: grupo, local: eq[2], visitante: eq[3] });
+  // Jornada 2
+  partidos.push({ id: partidoId++, fecha: "Jornada 2", grupo: grupo, local: eq[0], visitante: eq[2] });
+  partidos.push({ id: partidoId++, fecha: "Jornada 2", grupo: grupo, local: eq[1], visitante: eq[3] });
+  // Jornada 3
+  partidos.push({ id: partidoId++, fecha: "Jornada 3", grupo: grupo, local: eq[0], visitante: eq[3] });
+  partidos.push({ id: partidoId++, fecha: "Jornada 3", grupo: grupo, local: eq[1], visitante: eq[2] });
+});
+
+const predicciones = {};
+const prediccionesEliminatorias = {}; 
+
+let vistaActual = 'grupo'; // Empieza mostrando el Fixture de Grupos Completo
+
+function actualizarPrediccion(id, equipo, valor) {
+  if (!predicciones[id]) predicciones[id] = { golesL: '', golesV: '' };
+  predicciones[id][equipo] = valor;
+  render();
+}
+
+function actualizarPrediccionEliminatoria(llaveId, equipo, valor) {
+  if (!prediccionesEliminatorias[llaveId]) {
+    prediccionesEliminatorias[llaveId] = { golesL: '', golesV: '', penalesGana: '' };
+  }
+  prediccionesEliminatorias[llaveId][equipo] = valor;
+  render();
+}
+
+function obtenerClasificadosDeGrupos() {
+  const clasificados = {};
+  Object.keys(gruposConfig).forEach(g => {
+    const tabla = gruposConfig[g].map(eq => ({ nombre: eq, pj: 0, pts: 0 }));
+    partidos.filter(p => p.grupo === g).forEach(p => {
+      const predL = predicciones[p.id]?.golesL;
+      const predV = predicciones[p.id]?.golesV;
+      if (predL !== '' && predV !== '' && predL !== undefined && predV !== undefined) {
+        const gL = parseInt(predL); const gV = parseInt(predV);
+        const el = tabla.find(e => e.nombre === p.local); const ev = tabla.find(e => e.nombre === p.visitante);
+        if (el && ev) { el.pj++; ev.pj++; if (gL > gV) { el.pts += 3; } else if (gL < gV) { ev.pts += 3; } else { el.pts += 1; ev.pts += 1; } }
+      }
+    });
+    tabla.sort((a, b) => b.pts - a.pts);
+    clasificados[g] = { primero: tabla[0]?.nombre || "Por definir", segundo: tabla[1]?.nombre || "Por definir" };
+  });
+  return clasificados;
+}
+
+function obtenerGanadorLlave(llaveId, local, visitante) {
+  const p = prediccionesEliminatorias[llaveId];
+  if (!p || p.golesL === '' || p.golesV === '' || p.golesL === undefined || p.golesV === undefined) return "Por definir";
+  const gL = parseInt(p.golesL); const gV = parseInt(p.golesV);
+  if (gL > gV) return local;
+  if (gL < gV) return visitante;
+  if (gL === gV) {
+    if (p.penalesGana === 'L') return local;
+    if (p.penalesGana === 'V') return visitante;
+  }
+  return "Por definir";
+}
+
+function cambiarVista(nuevaVista) {
+  vistaActual = nuevaVista;
+  ['grupo', 'eliminatoria'].forEach(v => {
+    document.getElementById('tab-' + v).style.background = v === nuevaVista ? '#e8e6df' : 'transparent';
+  });
+  render();
+}
+
+function generarTarjetaPartido(p) {
+  const predL = predicciones[p.id]?.golesL ?? '';
+  const predV = predicciones[p.id]?.golesV ?? '';
+  return `
+    <div style="background: #ffffff; border: 0.5px solid #d3d1c7; border-radius: 8px; padding: 0.4rem 0.8rem; margin-bottom: 4px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 10px; color:#888; font-weight:600;">${p.fecha}</span>
+        <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; justify-content: flex-end; padding-right:10px;">
+          <div style="font-size: 12px; font-weight: 500; text-align: right; width:130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.local}</div>
+          <input type="number" min="0" placeholder="-" value="${predL}" oninput="actualizarPrediccion(${p.id}, 'golesL', this.value)" style="width: 28px; height: 24px; text-align: center; font-size: 12px; font-weight: 600; border: 1px solid #d3d1c7; border-radius: 4px;">
+          <span style="color: #bbb; font-size: 10px;">v</span>
+          <input type="number" min="0" placeholder="-" value="${predV}" oninput="actualizarPrediccion(${p.id}, 'golesV', this.value)" style="width: 28px; height: 24px; text-align: center; font-size: 12px; font-weight: 600; border: 1px solid #d3d1c7; border-radius: 4px;">
+          <div style="font-size: 12px; font-weight: 500; text-align: left; width:130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.visitante}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function generarTarjetaLlaveGoles(llaveId, local, visitante) {
+  const predL = prediccionesEliminatorias[llaveId]?.golesL ?? '';
+  const predV = prediccionesEliminatorias[llaveId]?.golesV ?? '';
+  const penalesGana = prediccionesEliminatorias[llaveId]?.penalesGana ?? '';
+  const mostrarPenales = (predL !== '' && predV !== '' && parseInt(predL) === parseInt(predV));
+  const ganador = obtenerGanadorLlave(llaveId, local, visitante);
+
+  return `
+    <div style="background: #ffffff; border: 0.5px solid #d3d1c7; border-radius: 8px; padding: 0.6rem 1rem; margin-bottom: 6px;">
+      <div style="display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-bottom: 4px; font-weight: bold;">
+        <span>${llaveId}</span>
+        ${ganador !== 'Por definir' ? `<span style="color:#14833b;">Avanza: ${ganador}</span>` : ''}
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+        <div style="display: flex; align-items: center; flex-grow: 1; justify-content: center; gap: 12px;">
+          <div style="font-size: 13px; font-weight: ${ganador === local ? '700' : '500'}; color: ${ganador === local ? '#14833b' : '#333'}; text-align: right; flex: 1;">${local}</div>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <input type="number" min="0" placeholder="-" value="${predL}" oninput="actualizarPrediccionEliminatoria('${llaveId}', 'golesL', this.value)" style="width: 32px; height: 28px; text-align: center; font-size: 14px; font-weight: 600; border: 1px solid #d3d1c7; border-radius: 4px;">
+            <span style="color: #bbb; font-size: 12px;">v</span>
+            <input type="number" min="0" placeholder="-" value="${predV}" oninput="actualizarPrediccionEliminatoria('${llaveId}', 'golesV', this.value)" style="width: 32px; height: 28px; text-align: center; font-size: 14px; font-weight: 600; border: 1px solid #d3d1c7; border-radius: 4px;">
+          </div>
+          <div style="font-size: 13px; font-weight: ${ganador === visitante ? '700' : '500'}; color: ${ganador === visitante ? '#14833b' : '#333'}; text-align: left; flex: 1;">${visitante}</div>
+        </div>
+      </div>
+      ${mostrarPenales ? `
+        <div style="margin-top: 6px; text-align: center; font-size: 11px; background: #faf9f6; padding: 4px; border-radius: 4px; border: 0.5px dashed #d3d1c7;">
+          <select onchange="actualizarPrediccionEliminatoria('${llaveId}', 'penalesGana', this.value)" style="font-size: 11px; padding: 2px;">
+            <option value="">-- Gana Penales --</option>
+            <option value="L" ${penalesGana === 'L' ? 'selected' : ''}>${local}</option>
+            <option value="V" ${penalesGana === 'V' ? 'selected' : ''}>${visitante}</option>
+          </select>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function render() {
+  const cont = document.getElementById('fixture-contenedor');
+  cont.innerHTML = '';
+
+  if (vistaActual === 'grupo') {
+    Object.keys(gruposConfig).forEach(g => {
+      cont.innerHTML += `<h4 style="font-size: 14px; color: #0c447c; margin: 1.5rem 0 0.5rem 4px; font-weight: 700;">${g}</h4>`;
+      
+      const datosTabla = (() => {
+        const tabla = gruposConfig[g].map(eq => ({ nombre: eq, pj: 0, pts: 0 }));
+        partidos.filter(p => p.grupo === g).forEach(p => {
+          const predL = predicciones[p.id]?.golesL; const predV = predicciones[p.id]?.golesV;
+          if (predL !== '' && predV !== '' && predL !== undefined && predV !== undefined) {
+            const gL = parseInt(predL); const gV = parseInt(predV);
+            const el = tabla.find(e => e.nombre === p.local); const ev = tabla.find(e => e.nombre === p.visitante);
+            if (el && ev) { el.pj++; ev.pj++; if (gL > gV) el.pts += 3; else if (gL < gV) ev.pts += 3; else { el.pts += 1; ev.pts += 1; } }
+          }
+        });
+        return tabla.sort((a, b) => b.pts - a.pts);
+      })();
+
+      cont.innerHTML += `
+        <table class="tabla-posiciones">
+          <thead><tr><th>Pos</th><th style="text-align:left;">Equipo</th><th>PJ</th><th>Pts</th></tr></thead>
+          <tbody>${datosTabla.map((eq, i) => `<tr><td>${i+1}</td><td>${eq.nombre}</td><td>${eq.pj}</td><td style="font-weight:bold;">${eq.pts}</td></tr>`).join('')}</tbody>
+        </table>`;
+        
+      cont.innerHTML += partidos.filter(p => p.grupo === g).map(p => generarTarjetaPartido(p)).join('');
+    });
+  } 
+  
+  else if (vistaActual === 'eliminatoria') {
+    const clasificados = obtenerClasificadosDeGrupos();
+
+    cont.innerHTML += `<h3 style="font-size: 14px; color: #333; margin: 1rem 0 0.5rem 0; border-left: 3px solid #14833b; padding-left: 6px;">Octavos de Final (Ejemplo de Llaves Automatizadas)</h3>`;
+    
+    cont.innerHTML += generarTarjetaLlaveGoles('Octavos Llave 1', clasificados["Grupo A"].primero, clasificados["Grupo B"].segundo);
+    cont.innerHTML += generarTarjetaLlaveGoles('Octavos Llave 2', clasificados["Grupo C"].primero, clasificados["Grupo D"].segundo);
+    cont.innerHTML += generarTarjetaLlaveGoles('Octavos Llave 3', clasificados["Grupo E"].primero, clasificados["Grupo F"].segundo);
+    cont.innerHTML += generarTarjetaLlaveGoles('Octavos Llave 4', clasificados["Grupo G"].primero, clasificados["Grupo H"].segundo);
+    cont.innerHTML += generarTarjetaLlaveGoles('Octavos Llave 5', clasificados["Grupo I"].primero, clasificados["Grupo J"].segundo);
+    cont.innerHTML += generarTarjetaLlaveGoles('Octavos Llave 6', clasificados["Grupo K"].primero, clasificados["Grupo L"].segundo);
+
+    const c1_L = obtenerGanadorLlave('Octavos Llave 1', clasificados["Grupo A"].primero, clasificados["Grupo B"].segundo);
+    const c1_V = obtenerGanadorLlave('Octavos Llave 2', clasificados["Grupo C"].primero, clasificados["Grupo D"].segundo);
+    const c2_L = obtenerGanadorLlave('Octavos Llave 3', clasificados["Grupo E"].primero, clasificados["Grupo F"].segundo);
+    const c2_V = obtenerGanadorLlave('Octavos Llave 4', clasificados["Grupo G"].primero, clasificados["Grupo H"].segundo);
+    const c3_L = obtenerGanadorLlave('Octavos Llave 5', clasificados["Grupo I"].primero, clasificados["Grupo J"].segundo);
+    const c3_V = obtenerGanadorLlave('Octavos Llave 6', clasificados["Grupo K"].primero, clasificados["Grupo L"].segundo);
+
+    cont.innerHTML += `<h3 style="font-size: 14px; color: #333; margin: 1.5rem 0 0.5rem 0; border-left: 3px solid #0c447c; padding-left: 6px;">Cuartos de Final</h3>`;
+    cont.innerHTML += generarTarjetaLlaveGoles('Cuartos Llave 1', c1_L, c1_V);
+    cont.innerHTML += generarTarjetaLlaveGoles('Cuartos Llave 2', c2_L, c2_V);
+    cont.innerHTML += generarTarjetaLlaveGoles('Cuartos Llave 3', c3_L, c3_V);
+  }
+}
+
+function guardarPredicciones() {
+  console.log("Fase Grupos:", predicciones);
+  alert("¡Se guardaron los resultados de los 72 partidos de grupos y las llaves!");
+}
+
+render();
+</script>
