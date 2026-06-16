@@ -1,6 +1,9 @@
 body {
 	background-color: #512da8;
-	font-family: poppins, regular;
+	font-family: 'Inter', sans-serif;
+}
+.tituloAside {
+	font-size: 20px;
 }
 .sidebar {
 	position: fixed;
@@ -69,11 +72,20 @@ body {
 	display: flex;
 	justify-content: center;
 	width: 32%;
-	height: 240px;
+	height: 280px;
+	gap: 20px;
+	margin-top: 20px;
+}
+.contenidoGlobal1 {
+	display: flex;
+	justify-content: center;
+	width: 32%;
+	height: 150px;
 	gap: 20px;
 	margin-top: 20px;
 }
 .contenido {
+	display: flex;
 	width: 100%;
 	height: 90%;
 	background-color: #ffffff;
@@ -85,4 +97,12 @@ body {
 	text-align: left;
 	padding: 12px;
 	size: 24px;
+}
+.numero {
+	align-items: right;
+	padding: 12px;
+}
+.num {
+	font-size: 64px;
+	color: #111011;
 }
