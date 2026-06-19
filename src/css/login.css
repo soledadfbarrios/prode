@@ -86,7 +86,29 @@ body {
 	color: white;
 	font-size: 24px;
 
-	padding-top: 80px;
+	padding-top: 40px;
 
 	align-items: center;
+}
+.botonRegistro {
+	margin-top: 80px;
+	width: 220px;
+	height: 60px;
+
+	background-color: #ffea5f;
+	color: #512da8;
+
+	border: none;
+	border-radius: 30px;
+
+	font-size: 18px;
+	font-weight: bold;
+
+	cursor: pointer;
+
+	transition: 0.3s;
+}
+
+.botonRegistro:hover {
+	transform: scale(1.05);
 }
