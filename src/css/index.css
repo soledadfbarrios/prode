@@ -187,3 +187,9 @@ body {
 .estadisticas1::-webkit-scrollbar {
 	display: none;
 }
+.proximo {
+	text-align: left;
+	padding-left: 15px;
+	font-weight: bold;
+	margin-bottom: 15px;
+}

@@ -1,0 +1,92 @@
+body {
+	background-color: #512da8;
+	font-family: 'Inter', sans-serif;
+}
+.tituloAside {
+	font-size: 20px;
+}
+.sidebar {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 170px;
+	height: 100vh;
+	background: #ffea5f;
+	opacity: 0.9;
+	color: #512da8;
+	padding: 20px;
+
+	display: flex;
+	flex-direction: column;
+}
+
+.sidebar a {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	text-decoration: none;
+	color: #512da8;
+	padding: 10px 0;
+}
+
+.sidebar a svg {
+	width: 18px;
+	height: 18px;
+}
+
+.sidebar nav {
+	font-size: 18px;
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+	margin-top: 30px;
+	margin-left: 30px;
+	text-align: left;
+}
+.hecho {
+	margin-top: auto;
+	text-align: center;
+	font-size: 16px;
+	opacity: 0.8;
+	padding-bottom: 10px;
+}
+.titulo {
+	font-size: 36px;
+	color: #ffea5f;
+	margin-top: 4px;
+	margin-bottom: 0px;
+}
+.subtitulo {
+	font-size: 24px;
+	color: #e6e6e1;
+	margin-top: 0px;
+	margin-bottom: 10px;
+}
+.todo {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	align-content: center;
+	margin-left: 210px;
+}
+.contenidoGlobal {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+}
+.input {
+	width: 220px;
+	height: 35px;
+	background: #ffffff;
+	border: 4px solid #ffea5f;
+	border-radius: 30px;
+}
+.texto {
+	color: white;
+	font-size: 24px;
+
+	padding-top: 80px;
+
+	align-items: center;
+}
